@@ -1,5 +1,6 @@
 using BookShop.Domains.Entities;
 using BookShop.Infrastructure.Interfaces;
+using BookShop.Infrastructure.Persistence;
 
 namespace BookShop.Web.Middleware;
 
@@ -20,9 +21,12 @@ public class DatabaseSeedMiddleware
     public async Task InvokeAsync(HttpContext httpContext)
     {
         using var scope = _serviceScopeFactory.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<BookShopDbContext>();
         var bookRepository = scope.ServiceProvider.GetRequiredService<IRepository<Book>>();
         var orderRepository = scope.ServiceProvider.GetRequiredService<IRepository<Order>>();
         var orderItemRepository = scope.ServiceProvider.GetRequiredService<IRepository<OrderItem>>();
+        
+        await dbContext.Database.EnsureCreatedAsync();
         
         if (!bookRepository.GetAll().Any())
             await SeedBooks(bookRepository);
